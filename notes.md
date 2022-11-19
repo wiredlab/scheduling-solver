@@ -80,4 +80,14 @@ Switch to using `conda` to manage environments and use python3.11
 
 Capture packages installed in the conda environment in `environment.yml`
 
+---
+
+
+Still throws the same `RecursionError`.
+Reaching the limit of generic script setup tricks, need to understand what the
+code is doing now...
+
+
+
+
 
