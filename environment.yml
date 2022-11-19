@@ -1,0 +1,12 @@
+name: coe-schedulingx
+channels:
+- conda-forge
+- defaults
+dependencies:
+- numpy=1.23.4
+- openpyxl=3.0.10
+- pandas=1.5.1
+- pulp=2.7.0
+- python=3.11.0
+- pyyaml=6.0
+prefix: /home/dan/miniconda3/envs/coe-schedulingx
