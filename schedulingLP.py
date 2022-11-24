@@ -27,12 +27,12 @@ n_courses = len(courses)        # Finding the number of courses
 # creating the vector that will indicate the rows of interest
 row_index = []
 for i in range(n_profs):
-    row_index.append(4+i)    
+    row_index.append(4+i)
 
 # creating the vector that will indicate the columns of interest
 col_index = []
 for i in range(n_courses):
-    col_index.append(2+i)    
+    col_index.append(2+i)
 
 nslice = df.iloc[row_index,col_index]
 Pref_matrix = nslice.values.tolist()
@@ -47,7 +47,7 @@ My_slice=df.iloc[1,:].values.tolist()  #Extract the second row with the number o
 needs_slice = My_slice[2:]     # eliminating the first 2 cols with the headers
 TLC = [x for x in needs_slice if str(x) != 'nan']     #Eliminate the empty cols
 
-# Profs TLC Supply 
+# Profs TLC Supply
 My_slice=df.iloc[:,1].values.tolist()  #Extract the second column with the profs capacities
 profs_capacity = My_slice[4:]     # eliminating the first 4 rows with the headers
 TLC_capacity = [x for x in profs_capacity if str(x) != 'nan']     #Eliminate the empty rows
@@ -77,7 +77,7 @@ for j in range(n_courses):
 for i in range(n_profs):
     print(lpSum(allocation[i][j-10]*TLC[j-10] for j in range(10,10+n_courses)) <= TLC_capacity[i])
     model += lpSum(allocation[i][j-10]*TLC[j-10] for j in range(10,10+n_courses)) <= TLC_capacity[i] , "TLC capacity " + str(i)
-    
+
 model.solve()
 
 status =  LpStatus[model.status]
@@ -92,7 +92,7 @@ TLC_count = [0]*n_profs  #This list tracks number of TLCs assigned to each prof
 # This will make final_list a list of n_profs x lists
 for i in range(n_profs):
     final_list.append([])
-        
+
 for v in model.variables():
     if (v.value() != 0):
         prof_index = int(v.name[2])
@@ -101,9 +101,9 @@ for v in model.variables():
         my_string = str(v.value()) + " x " + str(course_name)
         final_list[prof_index].append(my_string)
         TLC_count[prof_index] += v.value()*TLC[course_index]
-        
+
 with open("output.txt", "a") as f:
     for i in range(n_profs):
         print(profs[i]+":\t"+str(final_list[i])+"\t"+"TLCs = "+str(TLC_count[i])+"/"+str(TLC_capacity[i])+"\n", file = f)
 
-        
+
