@@ -9,7 +9,7 @@ from pulp import LpProblem, LpMaximize, LpVariable, lpSum, LpStatus
 import pandas as pd
 import numpy as np
 
-df = pd.read_excel('Sp24.xlsx')
+df = pd.read_excel('Sp24b.xlsx')
 
 #Figuring out the Professors
 My_slice=df.iloc[:,0].values.tolist()  #Extract the first column with the profs names
@@ -102,7 +102,7 @@ for v in model.variables():
         final_list[prof_index].append(my_string)
         TLC_count[prof_index] += v.value()*TLC[course_index]
 
-with open("output.txt", "a") as f:
+with open("output.txt", "w") as f:
     for i in range(n_profs):
         print(profs[i]+":\t"+str(final_list[i])+"\t"+"TLCs = "+str(TLC_count[i])+"/"+str(TLC_capacity[i])+"\n", file = f)
 
