@@ -14,3 +14,13 @@ flask run
 
 With Apache's mod_wsgi, start with `scheduling-app.wsgi` and `scheduling-app.conf`.
 
+
+# Installation with Apache and mod_wsgi
+
+```bash
+cd /var/www/apps/scheduling-solver
+
+sudo virtualenv env
+sudo env/bin/pip install -r requirements.txt
+```
+
