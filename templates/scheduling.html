@@ -1,48 +1,51 @@
 <!doctype html>
 <html>
-    <title>Scheduling solver</title>
+<title>Scheduling solver</title>
+
 <head>
 <style>
 .errors { color: red; }
 dt { font-weight: bold; margin-top: 1em }
-dl, dd { font-size: .9rem; }
 pre { border: solid 1px; padding: 1em; }
 </style>
 </head>
 
 <body>
-
 <h1>Generate a Faculty Schedule Solution</h1>
 
 <h2>Instructions</h2>
 
 <p>Upload a formatted XLSX file.</p>
-<p><a href="">Example template file</a></p>
+<p><a href="">TODO: Example template file</a></p>
 
 <hr>
 
+<br>
+<!-- show error messages, if any -->
 {% macro render_field(field) %}
   <div>{{ field.label }}: {{ field(**kwargs)|safe }} {% if field.errors %} <span class=errors> {% for error in field.errors %} {{ error }} {% endfor %} </span> {% endif %}
   </div>
 {% endmacro %}
 
-
-<br>
 <form method="POST" action="" enctype="multipart/form-data">
     {{ render_field(form.xlsxfile, onchange="this.form.submit()") }}
     {{ form.csrf_token() }}
     {{ form.submit }}
-    <!--<p><input type=submit value=Submit>-->
+    <!-- the onchange above automatically "clicks" the Submit button -->
 </form>
 <br>
 
 <hr>
 
+<!-- Show the results in a nice format, if present. -->
 {% if output %}
 Results from <b>{{ filename }}</b> generated on {{ timestamp }}:
 
 <br>
 
+<!-- description list
+  https://developer.mozilla.org/en-US/docs/Web/HTML/Element/dl
+-->
 <dl>
 {% for prof, d in result.items() %}
     <dt>{{ prof }} {{ "(%.0f / %d)"|format(d['TLC'], d['capacity']) }}</dt>
@@ -52,15 +55,17 @@ Results from <b>{{ filename }}</b> generated on {{ timestamp }}:
 {% endfor %}
 </dl>
 
+<!-- display original output.txt contents also -->
 <br>
-
 <pre>
 {{ output }}
 </pre>
+
+<!-- No results yet, so add a placeholder for the user -->
 {% else %}
-<div style='color: grey'>
-(Results will display here after uploading.)
-</div>
+    <div style='color: grey'>
+    (Results will display here after uploading.)
+    </div>
 {% endif %}
 
 </body>
