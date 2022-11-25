@@ -97,21 +97,33 @@ def run(xlsx_file):
     for i in range(n_profs):
         final_list.append([])
 
+    # initialize dict for professors
+    result = {}
+    for i, prof in enumerate(profs):
+        result[prof] = {'courses':[], 'TLC':0, 'capacity':TLC_capacity[i]}
+
     for v in model.variables():
         if (v.value() != 0):
             prof_index = int(v.name[2])
             course_index = int(v.name[3:])-10
             course_name = courses[course_index]
             # my_string = str(v.value()) + " x " + str(course_name)
-            my_string = f"{v.value()} x {course_name}"
+            my_string = f"{v.value():.0f} x {course_name}"
             final_list[prof_index].append(my_string)
             TLC_count[prof_index] += v.value()*TLC[course_index]
+
+            # collect results into dict
+            prof = profs[prof_index]
+            result[prof]['courses'].append(my_string)
+            result[prof]['TLC'] += v.value() * TLC[course_index]
+
 
     f = StringIO()
     for i in range(n_profs):
         print(profs[i]+":\t"+str(final_list[i])+"\t"+"TLCs = "+str(TLC_count[i])+"/"+str(TLC_capacity[i])+"\n", file = f)
 
-    return f.getvalue()
+
+    return f.getvalue(), result
 
 if __name__ == "__main__":
     s = run("Sp24b.xlsx")
