@@ -102,7 +102,8 @@ def run(xlsx_file):
             prof_index = int(v.name[2])
             course_index = int(v.name[3:])-10
             course_name = courses[course_index]
-            my_string = str(v.value()) + " x " + str(course_name)
+            # my_string = str(v.value()) + " x " + str(course_name)
+            my_string = f"{v.value()} x {course_name}"
             final_list[prof_index].append(my_string)
             TLC_count[prof_index] += v.value()*TLC[course_index]
 
