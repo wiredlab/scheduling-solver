@@ -5,15 +5,20 @@ Created on Tue Oct 18 20:43:44 2022
 @author: skhorbot
 """
 
-from io import StringIO
-
 from pulp import LpProblem, LpMaximize, LpVariable, lpSum, LpStatus
 import pandas as pd
 import numpy as np
 
 
-def run(xlsx_file):
-    df = pd.read_excel(xlsx_file)
+def run(xlsx):
+    """Input: 'xlsx' can be a path or the file contents itself.
+
+    Outputs:
+        output - formatted string version of original
+        result - dict of results
+    """
+
+    df = pd.read_excel(xlsx)
 
     #Figuring out the Professors
     My_slice=df.iloc[:,0].values.tolist()  #Extract the first column with the profs names
@@ -113,19 +118,36 @@ def run(xlsx_file):
             TLC_count[prof_index] += v.value()*TLC[course_index]
 
             # collect results into dict
+            # {'name':{'courses': [ ... ],
+            #          'TLC': float,
+            #          'capacity': int, }
+            # }
             prof = profs[prof_index]
             result[prof]['courses'].append(my_string)
             result[prof]['TLC'] += v.value() * TLC[course_index]
 
 
-    f = StringIO()
+    out = []
     for i in range(n_profs):
-        print(profs[i]+":\t"+str(final_list[i])+"\t"+"TLCs = "+str(TLC_count[i])+"/"+str(TLC_capacity[i])+"\n", file = f)
+        prof = profs[i]
+        assignments = final_list[i]
+        tlc = TLC_count[i]
+        cap = TLC_capacity[i]
+
+        # print(profs[i]+":\t"+str(final_list[i])+"\t"+"TLCs = "+str(TLC_count[i])+"/"+str(TLC_capacity[i])+"\n", file = f)
+        out.append(f"{prof}:\t{assignments}\tTLCs = {tlc:.0f}/{cap}")
+
+    # original print() adds '\n' to the string, but print() already adds one
+    # hence two here to match the behavior
+    output = "\n\n".join(out)
 
 
-    return f.getvalue(), result
+    return output, result
 
+
+# This runs only if called like "python schedulingLP.py"
 if __name__ == "__main__":
-    s = run("Sp24b.xlsx")
-    print(s)
+    text, data = run("Sp24b.xlsx")
+    print(data)
+    print(text)
 
