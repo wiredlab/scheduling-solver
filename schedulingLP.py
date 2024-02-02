@@ -101,7 +101,7 @@ def run(xlsx):
 
     # Create the variables to be solved for
     variable_names = [
-        str(i) + str(j) for j in range(10, 10 + n_courses) for i in range(n_profs)
+        f"{i:02d}{j:02d}" for j in range(n_courses) for i in range(n_profs)
     ]
     variable_names.sort()
     DV_variables = LpVariable.matrix(
@@ -158,9 +158,12 @@ def run(xlsx):
         result[prof] = {"courses": [], "TLC": 0, "capacity": TLC_capacity[i]}
 
     for v in model.variables():
-        if v.value() != 0:
-            prof_index = int(v.name[2])
-            course_index = int(v.name[3:]) - 10
+        n_sections = int(v.value())  # can only be an integer
+
+        # Only care about non-zero assignments
+        if n_sections != 0:
+            prof_index = int(v.name[2:4])
+            course_index = int(v.name[4:6])
             course_name = courses[course_index]
             # my_string = str(v.value()) + " x " + str(course_name)
             my_string = f"{v.value():.0f} x {course_name}"
