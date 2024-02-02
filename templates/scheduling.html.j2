@@ -1,6 +1,6 @@
 <!doctype html>
 <html>
-<title>Scheduling solver</title>
+<title>Scheduling Solver</title>
 
 <head>
 <style>
@@ -55,16 +55,17 @@ Results from <b>{{ filename }}</b> generated on {{ timestamp }}:
 {% endfor %}
 </dl>
 
-<!-- display original output.txt contents also -->
+<!-- uncomment to display original output.txt contents
 <br>
 <pre>
 {{ output }}
 </pre>
+-->
 
 <!-- No results yet, so add a placeholder for the user -->
 {% else %}
     <div style='color: grey'>
-    (Results will display here after uploading.)
+    (Results will display here after uploading and processing.)
     </div>
 {% endif %}
 

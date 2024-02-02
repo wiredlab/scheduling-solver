@@ -28,7 +28,7 @@ def root():
     form = SchedulingForm()
 
     if form.validate_on_submit():
-        timestamp = time.strftime('%Y-%m-%d %H:%M:%S %Z', time.localtime(time.time()))
+        timestamp = time.strftime('%Y-%m-%d %H:%M:%S %Z', time.gmtime())
 
         # get the XLSX file's bytes
         data = form.xlsxfile.data
@@ -43,7 +43,7 @@ def root():
         # }
 
         # Create the results page, this time with the result data
-        response = render_template('scheduling.html',
+        response = render_template('scheduling.html.j2',
                                    form=form,
                                    filename=form.xlsxfile.data.filename,
                                    timestamp=timestamp,
@@ -51,7 +51,7 @@ def root():
                                    result=result)
 
     else:
-        response = render_template('scheduling.html', form=form)
+        response = render_template('scheduling.html.j2', form=form)
 
     return response
 
