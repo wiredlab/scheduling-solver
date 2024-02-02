@@ -14,22 +14,20 @@ import schedulingLP
 
 
 app = Flask(__name__)
-app.secret_key = 'topsecretlol'
+app.secret_key = "topsecretlol"
 csrf = CSRFProtect(app)
 
 
-
 class SchedulingForm(FlaskForm):
-    xlsxfile = FileField('XLSX file', [FileRequired()])
+    xlsxfile = FileField("XLSX file", [FileRequired()])
 
 
-
-@app.route('/', methods=['GET', 'POST'])
+@app.route("/", methods=["GET", "POST"])
 def root():
     form = SchedulingForm()
 
     if form.validate_on_submit():
-        timestamp = time.strftime('%Y-%m-%d %H:%M:%S %Z', time.gmtime())
+        timestamp = time.strftime("%Y-%m-%d %H:%M:%S %Z", time.gmtime())
 
         # get the XLSX file's bytes
         data = form.xlsxfile.data
@@ -44,19 +42,20 @@ def root():
         # }
 
         # Create the results page, this time with the result data
-        response = render_template('scheduling.html.j2',
-                                   form=form,
-                                   filename=form.xlsxfile.data.filename,
-                                   timestamp=timestamp,
-                                   output=output,
-                                   result=result)
+        response = render_template(
+            "scheduling.html.j2",
+            form=form,
+            filename=form.xlsxfile.data.filename,
+            timestamp=timestamp,
+            output=output,
+            result=result,
+        )
 
     else:
-        response = render_template('scheduling.html.j2', form=form)
+        response = render_template("scheduling.html.j2", form=form)
 
     return response
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app.run(debug=True)
-
