@@ -10,6 +10,9 @@ import pandas as pd
 import numpy as np
 
 
+DEBUG_PRINT = False
+
+
 def run(xlsx):
     """Input: 'xlsx' can be a path or the file contents itself.
 
@@ -20,23 +23,35 @@ def run(xlsx):
 
     df = pd.read_excel(xlsx)
 
+    #
     # Figuring out the Professors
-    My_slice = df.iloc[
-        :, 0
-    ].values.tolist()  # Extract the first column with the profs names
-    profs_slice = My_slice[4:]  # eliminating the first 4 rows with the headers
-    profs = [x for x in profs_slice if str(x) != "nan"]  # Eliminate the empty rows
-    n_profs = len(profs)  # Finding the number of Profs
+    #
+    # Extract the first column with the profs names
+    My_slice = df.iloc[:, 0].values.tolist()
 
+    # ignore the first 4 rows containing the headers
+    profs_slice = My_slice[4:]
+
+    # Eliminate the empty rows
+    profs = [x for x in profs_slice if str(x) != "nan"]
+    n_profs = len(profs)
+
+    #
     # Figuring out the Courses
-    My_slice = df.iloc[
-        0, :
-    ].values.tolist()  # Extract the first row with the courses names
-    courses_slice = My_slice[2:]  # eliminating the first 2 cols with the headers
-    courses = [x for x in courses_slice if str(x) != "nan"]  # Eliminate the empty cols
-    n_courses = len(courses)  # Finding the number of courses
+    #
+    # Extract the first row with the courses names
+    My_slice = df.iloc[0, :].values.tolist()
 
+    # Eliminating the first 2 cols with the headers
+    courses_slice = My_slice[2:]
+
+    # Eliminate the empty cols
+    courses = [x for x in courses_slice if str(x) != "nan"]
+    n_courses = len(courses)
+
+    #
     # Preference Matrix
+    #
     # creating the vector that will indicate the rows of interest
     row_index = []
     for i in range(n_profs):
@@ -51,29 +66,36 @@ def run(xlsx):
     Pref_matrix = nslice.values.tolist()
 
     # section Demand array
-    My_slice = df.iloc[
-        2, :
-    ].values.tolist()  # Extract the third row with the number of needed sections
-    needs_slice = My_slice[2:]  # eliminating the first 2 cols with the headers
-    course_needs = [
-        x for x in needs_slice if str(x) != "nan"
-    ]  # Eliminate the empty cols
+    # Extract the third row with the number of needed sections
+    My_slice = df.iloc[2, :].values.tolist()
 
-    # Course TLCs
-    My_slice = df.iloc[
-        1, :
-    ].values.tolist()  # Extract the second row with the number of needed sections
-    needs_slice = My_slice[2:]  # eliminating the first 2 cols with the headers
-    TLC = [x for x in needs_slice if str(x) != "nan"]  # Eliminate the empty cols
+    # eliminating the first 2 cols with the headers
+    needs_slice = My_slice[2:]
+
+    # Eliminate the empty cols
+    course_needs = [x for x in needs_slice if str(x) != "nan"]
+
+    #
+    # Course Teaching Load Credits
+    #
+    # Extract the second row with the number of needed sections
+    My_slice = df.iloc[ 1, : ].values.tolist()
+
+    # eliminating the first 2 cols with the headers
+    needs_slice = My_slice[2:]
+
+    # Eliminate the empty cols
+    TLC = [x for x in needs_slice if str(x) != "nan"]
 
     # Profs TLC Supply
-    My_slice = df.iloc[
-        :, 1
-    ].values.tolist()  # Extract the second column with the profs capacities
-    profs_capacity = My_slice[4:]  # eliminating the first 4 rows with the headers
-    TLC_capacity = [
-        x for x in profs_capacity if str(x) != "nan"
-    ]  # Eliminate the empty rows
+    # Extract the second column with the profs capacities
+    My_slice = df.iloc[ :, 1 ].values.tolist()
+
+    # eliminating the first 4 rows with the headers
+    profs_capacity = My_slice[4:]
+
+    # Eliminate the empty rows
+    TLC_capacity = [ x for x in profs_capacity if str(x) != "nan" ]
 
     model = LpProblem("Scheduling-Problem", LpMaximize)
 
@@ -86,39 +108,40 @@ def run(xlsx):
         "X", variable_names, cat="Integer", lowBound=0, upBound=2
     )
     allocation = np.array(DV_variables).reshape(n_profs, n_courses)
-    print("Decision Variable/Allocation Matrix: \n")
-    print(allocation)
-    print("\n")
+
+    if DEBUG_PRINT:
+        print("Decision Variable/Allocation Matrix: \n")
+        print(allocation)
+        print("\n")
 
     # Create an objective function and add it to the model
     obj_func = lpSum(allocation * Pref_matrix)
     model += obj_func
-    # print(model)
 
     # Covering needed courses Constraints
     for j in range(n_courses):
-        print(lpSum(allocation[i][j] for i in range(n_profs)) == course_needs[j])
-        model += lpSum(allocation[i][j] for i in range(n_profs)) == course_needs[
-            j
-        ], "Course needs " + str(j)
+        model += lpSum(allocation[i][j] for i in range(n_profs)) == course_needs[j], "Course needs " + str(j)
+
+        if DEBUG_PRINT:
+            print(lpSum(allocation[i][j] for i in range(n_profs)) == course_needs[j])
 
     # Profs availability Constraints
     for i in range(n_profs):
-        print(
-            lpSum(
-                allocation[i][j - 10] * TLC[j - 10] for j in range(10, 10 + n_courses)
-            )
-            <= TLC_capacity[i]
-        )
-        model += lpSum(
-            allocation[i][j - 10] * TLC[j - 10] for j in range(10, 10 + n_courses)
-        ) <= TLC_capacity[i], "TLC capacity " + str(i)
+        model += lpSum(allocation[i][j] * TLC[j] for j in range(n_courses)) <= TLC_capacity[i], "TLC capacity " + str(i)
 
+        if DEBUG_PRINT:
+            print(lpSum(allocation[i][j] * TLC[j] for j in range(n_courses)) <= TLC_capacity[i])
+
+    #
+    # The main event,
+    # solve the model
+    #
     model.solve()
-
     status = LpStatus[model.status]
 
-    print("\nStatus:", status, "\n")
+    if DEBUG_PRINT:
+        print("\nStatus:", status, "\n")
+        # print("Objective Function:", model.objective.value(), "\n")
 
     print("Objective Function:", model.objective.value(), "\n")
 
