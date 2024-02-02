@@ -38,9 +38,10 @@ pre { border: solid 1px; padding: 1em; }
 <hr>
 
 <!-- Show the results in a nice format, if present. -->
-{% if output %}
+{% if status %}
 Results from <b>{{ filename }}</b> generated on {{ timestamp }}:
-
+<br>
+Optimizer status: {{ status }}
 <br>
 
 <!-- description list
@@ -49,8 +50,8 @@ Results from <b>{{ filename }}</b> generated on {{ timestamp }}:
 <dl>
 {% for prof, d in result.items() %}
     <dt>{{ prof }} {{ "(%.0f / %d)"|format(d['TLC'], d['capacity']) }}</dt>
-    {% for course in d['courses'] %}
-        <dd>{{ course }}</dd>
+    {% for course, value in d['courses'].items() %}
+        <dd>{{ value }} - {{ course }}</dd>
     {% endfor %}
 {% endfor %}
 </dl>

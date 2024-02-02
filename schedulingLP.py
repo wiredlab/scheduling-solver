@@ -143,19 +143,15 @@ def run(xlsx):
         print("\nStatus:", status, "\n")
         # print("Objective Function:", model.objective.value(), "\n")
 
-    print("Objective Function:", model.objective.value(), "\n")
-
-    final_list = []  # This is a list of the courses assigned to each Prof
-    TLC_count = [0] * n_profs  # This list tracks number of TLCs assigned to each prof
-
-    # This will make final_list a list of n_profs x lists
-    for i in range(n_profs):
-        final_list.append([])
-
-    # initialize dict for professors
+    # Initialize dict to hold results by professor
     result = {}
     for i, prof in enumerate(profs):
-        result[prof] = {"courses": [], "TLC": 0, "capacity": TLC_capacity[i]}
+        result[prof] = {
+            "courses": {},
+            "TLC": 0,
+            "capacity":
+            TLC_capacity[i],
+        }
 
     for v in model.variables():
         n_sections = int(v.value())  # can only be an integer
@@ -165,39 +161,24 @@ def run(xlsx):
             prof_index = int(v.name[2:4])
             course_index = int(v.name[4:6])
             course_name = courses[course_index]
-            # my_string = str(v.value()) + " x " + str(course_name)
-            my_string = f"{v.value():.0f} x {course_name}"
-            final_list[prof_index].append(my_string)
-            TLC_count[prof_index] += v.value() * TLC[course_index]
-
-            # collect results into dict
-            # {'name':{'courses': [ ... ],
-            #          'TLC': float,
-            #          'capacity': int, }
-            # }
             prof = profs[prof_index]
-            result[prof]["courses"].append(my_string)
-            result[prof]["TLC"] += v.value() * TLC[course_index]
 
-    out = []
-    for i in range(n_profs):
-        prof = profs[i]
-        assignments = final_list[i]
-        tlc = TLC_count[i]
-        cap = TLC_capacity[i]
+            result[prof]["courses"][course_name] = n_sections
+            result[prof]["TLC"] += n_sections * TLC[course_index]
 
-        # print(profs[i]+":\t"+str(final_list[i])+"\t"+"TLCs = "+str(TLC_count[i])+"/"+str(TLC_capacity[i])+"\n", file = f)
-        out.append(f"{prof}:\t{assignments}\tTLCs = {tlc:.0f}/{cap}")
+    if DEBUG_PRINT:
+        import pprint
+        pprint.pprint(result)
 
-    # original print() adds '\n' to the string, but print() already adds one
-    # hence two here to match the behavior
-    output = "\n\n".join(out)
-
-    return output, result
+    return status, result
 
 
-# This runs only if called like "python schedulingLP.py"
+# This runs only if called like "python schedulingLP.py input_name.xlsx"
 if __name__ == "__main__":
-    text, data = run("Sp24b.xlsx")
-    print(data)
-    print(text)
+    import pprint
+    import sys
+
+    status, result = run(sys.argv[1])
+
+    pprint.pprint(result)
+    print(status)

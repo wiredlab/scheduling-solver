@@ -33,10 +33,11 @@ def root():
         data = form.xlsxfile.data
 
         # do the deed!
-        output, result = schedulingLP.run(xlsx=data)
+        status, result = schedulingLP.run(xlsx=data)
 
         # result dict structure, each key is the name of a prof:
-        # {'profname':{'courses': [ ... ],
+        # {'profname':{'courses': {'course1': int,
+        #                          'course2': int, ...},
         #              'TLC': float,
         #              'capacity': int, }
         # }
@@ -47,11 +48,12 @@ def root():
             form=form,
             filename=form.xlsxfile.data.filename,
             timestamp=timestamp,
-            output=output,
+            status=status,
             result=result,
         )
 
     else:
+        # invalid submission or fresh reloaded page
         response = render_template("scheduling.html.j2", form=form)
 
     return response
