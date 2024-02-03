@@ -21,81 +21,60 @@ def run(xlsx):
         result - dict of results
     """
 
-    df = pd.read_excel(xlsx)
+    df = pd.read_excel(
+        xlsx,
+        header=None, # first row is NOT DataFrame column labels
+    )
 
     #
     # Figuring out the Professors
     #
-    # Extract the first column with the profs names
-    My_slice = df.iloc[:, 0].values.tolist()
-
-    # ignore the first 4 rows containing the headers
-    profs_slice = My_slice[4:]
-
-    # Eliminate the empty rows
-    profs = [x for x in profs_slice if str(x) != "nan"]
+    # Ignore the first 4 rows containing the headers
+    # extract the first column containing the profs names
+    # trim empty cells
+    tmp = df.iloc[4:, 0]
+    profs = list(filter(pd.notna, tmp))
     n_profs = len(profs)
 
     #
     # Figuring out the Courses
     #
-    # Extract the first row with the courses names
-    My_slice = df.iloc[0, :].values.tolist()
-
-    # Eliminating the first 2 cols with the headers
-    courses_slice = My_slice[2:]
-
-    # Eliminate the empty cols
-    courses = [x for x in courses_slice if str(x) != "nan"]
+    # Extract the 1st row with the courses names
+    # which begin with the 3rd column
+    # trim empty cells
+    tmp = df.iloc[0, 2:]
+    courses = list(filter(pd.notna, tmp))
     n_courses = len(courses)
 
     #
     # Preference Matrix
     #
-    # creating the vector that will indicate the rows of interest
-    row_index = []
-    for i in range(n_profs):
-        row_index.append(4 + i)
-
-    # creating the vector that will indicate the columns of interest
-    col_index = []
-    for i in range(n_courses):
-        col_index.append(2 + i)
-
-    nslice = df.iloc[row_index, col_index]
-    Pref_matrix = nslice.values.tolist()
+    # Begins at the 5th row and 3rd column
+    pref_matrix = df.iloc[4:4+n_profs, 2:2+n_courses].values
 
     # section Demand array
     # Extract the third row with the number of needed sections
-    My_slice = df.iloc[2, :].values.tolist()
-
-    # eliminating the first 2 cols with the headers
-    needs_slice = My_slice[2:]
-
-    # Eliminate the empty cols
-    course_needs = [x for x in needs_slice if str(x) != "nan"]
+    # ignore the first 2 cols with the headers
+    # trim empty cells
+    tmp = df.iloc[2, 2:]
+    course_needs = list(filter(pd.notna, tmp))
 
     #
     # Course Teaching Load Credits
     #
-    # Extract the second row with the number of needed sections
-    My_slice = df.iloc[ 1, : ].values.tolist()
-
-    # eliminating the first 2 cols with the headers
-    needs_slice = My_slice[2:]
-
-    # Eliminate the empty cols
-    TLC = [x for x in needs_slice if str(x) != "nan"]
+    # Extract the second row with the TLCs per section
+    # ignore the first 2 cols with the headers
+    # trim empty cells
+    tmp = df.iloc[1, 2:]
+    TLC = list(filter(pd.notna, tmp))
 
     # Profs TLC Supply
     # Extract the second column with the profs capacities
-    My_slice = df.iloc[ :, 1 ].values.tolist()
+    # ignore the first 3 rows with the headers
+    # trim empty cells
+    tmp = df.iloc[3:, 1]
+    TLC_capacity = list(filter(pd.notna, tmp))
 
-    # eliminating the first 4 rows with the headers
-    profs_capacity = My_slice[4:]
-
-    # Eliminate the empty rows
-    TLC_capacity = [ x for x in profs_capacity if str(x) != "nan" ]
 
     model = LpProblem("Scheduling-Problem", LpMaximize)
 
@@ -115,7 +94,7 @@ def run(xlsx):
         print("\n")
 
     # Create an objective function and add it to the model
-    obj_func = lpSum(allocation * Pref_matrix)
+    obj_func = lpSum(allocation * pref_matrix)
     model += obj_func
 
     # Covering needed courses Constraints
