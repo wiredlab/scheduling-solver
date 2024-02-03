@@ -41,7 +41,15 @@ def run(xlsx):
     profs = list(filter(pd.notna, tmp))
     n_profs = len(profs)
 
-    # Figuring out the Courses
+    # Profs TLC Supply
+    #
+    # Extract the second column with the profs capacities
+    # ignore the first 3 rows with the headers
+    # trim empty cells
+    tmp = df.iloc[3:, 1]
+    TLC_capacity = list(filter(pd.notna, tmp))
+
+    # Course names
     #
     # Extract the 1st row with the courses names
     # which begin with the 3rd column
@@ -49,19 +57,6 @@ def run(xlsx):
     tmp = df.iloc[0, 2:]
     courses = list(filter(pd.notna, tmp))
     n_courses = len(courses)
-
-    # Preference Matrix
-    #
-    # Begins at the 5th row and 3rd column
-    pref_matrix = df.iloc[4:4+n_profs, 2:2+n_courses].values
-
-    # Section Demand array
-    #
-    # Extract the third row with the number of needed sections
-    # ignore the first 2 cols with the headers
-    # trim empty cells
-    tmp = df.iloc[2, 2:]
-    course_needs = list(filter(pd.notna, tmp))
 
     # Course Teaching Load Credits
     #
@@ -71,13 +66,19 @@ def run(xlsx):
     tmp = df.iloc[1, 2:]
     TLC = list(filter(pd.notna, tmp))
 
-    # Profs TLC Supply
+    # Section Demand array
     #
-    # Extract the second column with the profs capacities
-    # ignore the first 3 rows with the headers
+    # Extract the third row with the number of needed sections
+    # ignore the first 2 cols with the headers
     # trim empty cells
-    tmp = df.iloc[3:, 1]
-    TLC_capacity = list(filter(pd.notna, tmp))
+    tmp = df.iloc[2, 2:]
+    course_needs = list(filter(pd.notna, tmp))
+
+    # Preference Matrix
+    #
+    # Begins at the 5th row and 3rd column
+    # extends only to the number of professors and courses
+    pref_matrix = df.iloc[4:4+n_profs, 2:2+n_courses].values
 
 
     ###################################################################
