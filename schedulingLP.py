@@ -5,12 +5,24 @@ Created on Tue Oct 18 20:43:44 2022
 @author: skhorbot
 """
 
+import logging
+import pprint
+
 from pulp import LpProblem, LpMaximize, LpVariable, lpSum, LpStatus
 import pandas as pd
 import numpy as np
 
+debug = logging.debug
+info = logging.info
 
-DEBUG_PRINT = False
+logger = logging.getLogger()
+
+# Change logging level
+# DEBUG, INFO, WARNING, ERROR, CRITICAL
+# default logging level is WARNING
+#logger.setLevel(logging.INFO)
+
+
 
 
 def run(xlsx):
@@ -98,10 +110,8 @@ def run(xlsx):
     )
     allocation = np.array(DV_variables).reshape(n_profs, n_courses)
 
-    if DEBUG_PRINT:
-        print("Decision Variable/Allocation Matrix: \n")
-        print(allocation)
-        print("\n")
+    debug("Decision Variable/Allocation Matrix: \n")
+    debug(allocation)
 
     # Create an objective function and add it to the model
     obj_func = lpSum(allocation * pref_matrix)
@@ -111,15 +121,13 @@ def run(xlsx):
     for j in range(n_courses):
         model += lpSum(allocation[i][j] for i in range(n_profs)) == course_needs[j], "Course needs " + str(j)
 
-        if DEBUG_PRINT:
-            print(lpSum(allocation[i][j] for i in range(n_profs)) == course_needs[j])
+        debug(lpSum(allocation[i][j] for i in range(n_profs)) == course_needs[j])
 
     # Profs availability Constraints
     for i in range(n_profs):
         model += lpSum(allocation[i][j] * TLC[j] for j in range(n_courses)) <= TLC_capacity[i], "TLC capacity " + str(i)
 
-        if DEBUG_PRINT:
-            print(lpSum(allocation[i][j] * TLC[j] for j in range(n_courses)) <= TLC_capacity[i])
+        debug(lpSum(allocation[i][j] * TLC[j] for j in range(n_courses)) <= TLC_capacity[i])
 
 
     ###################################################################
@@ -129,9 +137,11 @@ def run(xlsx):
     model.solve()
     status = LpStatus[model.status]
 
-    if DEBUG_PRINT:
-        print("\nStatus:", status, "\n")
-        # print("Objective Function:", model.objective.value(), "\n")
+    info("Professors: " + ", ".join(profs))
+    info("Courses: "+ ", ".join(courses))
+
+    debug("Status:", status)
+    # debug("Objective Function:", model.objective.value())
 
 
     ###################################################################
@@ -162,16 +172,13 @@ def run(xlsx):
             result[prof]["courses"][course_name] = n_sections
             result[prof]["TLC"] += n_sections * TLC[course_index]
 
-    if DEBUG_PRINT:
-        import pprint
-        pprint.pprint(result)
+    debug(pprint.pformat(result))
 
     return status, result
 
 
 # This runs only if called like "python schedulingLP.py input_name.xlsx"
 if __name__ == "__main__":
-    import pprint
     import sys
 
     status, result = run(sys.argv[1])
