@@ -14,7 +14,8 @@ DEBUG_PRINT = False
 
 
 def run(xlsx):
-    """Input: 'xlsx' can be a path or the file contents itself.
+    """Input:
+        xlsx - can be a path to a spreadsheet or the file contents itself
 
     Outputs:
         output - formatted string version of original
@@ -26,7 +27,11 @@ def run(xlsx):
         header=None, # first row is NOT DataFrame column labels
     )
 
+    ###################################################################
     #
+    # Extract configuration information from spreadsheet
+    #
+    ###################################################################
     # Figuring out the Professors
     #
     # Ignore the first 4 rows containing the headers
@@ -36,7 +41,6 @@ def run(xlsx):
     profs = list(filter(pd.notna, tmp))
     n_profs = len(profs)
 
-    #
     # Figuring out the Courses
     #
     # Extract the 1st row with the courses names
@@ -46,20 +50,19 @@ def run(xlsx):
     courses = list(filter(pd.notna, tmp))
     n_courses = len(courses)
 
-    #
     # Preference Matrix
     #
     # Begins at the 5th row and 3rd column
     pref_matrix = df.iloc[4:4+n_profs, 2:2+n_courses].values
 
-    # section Demand array
+    # Section Demand array
+    #
     # Extract the third row with the number of needed sections
     # ignore the first 2 cols with the headers
     # trim empty cells
     tmp = df.iloc[2, 2:]
     course_needs = list(filter(pd.notna, tmp))
 
-    #
     # Course Teaching Load Credits
     #
     # Extract the second row with the TLCs per section
@@ -69,6 +72,7 @@ def run(xlsx):
     TLC = list(filter(pd.notna, tmp))
 
     # Profs TLC Supply
+    #
     # Extract the second column with the profs capacities
     # ignore the first 3 rows with the headers
     # trim empty cells
@@ -76,6 +80,11 @@ def run(xlsx):
     TLC_capacity = list(filter(pd.notna, tmp))
 
 
+    ###################################################################
+    #
+    # Construct the linear programming model
+    #
+    ###################################################################
     model = LpProblem("Scheduling-Problem", LpMaximize)
 
     # Create the variables to be solved for
@@ -111,10 +120,11 @@ def run(xlsx):
         if DEBUG_PRINT:
             print(lpSum(allocation[i][j] * TLC[j] for j in range(n_courses)) <= TLC_capacity[i])
 
-    #
+
+    ###################################################################
     # The main event,
     # solve the model
-    #
+    ###################################################################
     model.solve()
     status = LpStatus[model.status]
 
@@ -122,6 +132,12 @@ def run(xlsx):
         print("\nStatus:", status, "\n")
         # print("Objective Function:", model.objective.value(), "\n")
 
+
+    ###################################################################
+    #
+    # Collect results into a usable form
+    #
+    ###################################################################
     # Initialize dict to hold results by professor
     result = {}
     for i, prof in enumerate(profs):
