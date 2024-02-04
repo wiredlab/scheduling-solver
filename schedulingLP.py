@@ -20,7 +20,7 @@ logger = logging.getLogger()
 # Change logging level
 # DEBUG, INFO, WARNING, ERROR, CRITICAL
 # default logging level is WARNING
-#logger.setLevel(logging.INFO)
+logger.setLevel(logging.INFO)
 
 
 
@@ -48,7 +48,7 @@ def run(xlsx):
     #
     # Ignore the first 4 rows containing the headers
     # extract the first column containing the profs names
-    # trim empty cells
+    # trim empty cells to find the number of profs
     tmp = df.iloc[4:, 0]
     profs = list(filter(pd.notna, tmp))
     n_profs = len(profs)
@@ -56,16 +56,14 @@ def run(xlsx):
     # Profs TLC Supply
     #
     # Extract the second column with the profs capacities
-    # ignore the first 3 rows with the headers
-    # trim empty cells
-    tmp = df.iloc[3:, 1]
-    TLC_capacity = list(filter(pd.notna, tmp))
+    # ignore the first 4 rows with the headers
+    TLC_capacity = df.iloc[4:4+n_profs, 1].to_list()
 
     # Course names
     #
     # Extract the 1st row with the courses names
     # which begin with the 3rd column
-    # trim empty cells
+    # trim empty cells to find the number of courses
     tmp = df.iloc[0, 2:]
     courses = list(filter(pd.notna, tmp))
     n_courses = len(courses)
@@ -74,17 +72,13 @@ def run(xlsx):
     #
     # Extract the second row with the TLCs per section
     # ignore the first 2 cols with the headers
-    # trim empty cells
-    tmp = df.iloc[1, 2:]
-    TLC = list(filter(pd.notna, tmp))
+    TLC = df.iloc[1, 2:2+n_courses].to_list()
 
     # Section Demand array
     #
     # Extract the third row with the number of needed sections
     # ignore the first 2 cols with the headers
-    # trim empty cells
-    tmp = df.iloc[2, 2:]
-    course_needs = list(filter(pd.notna, tmp))
+    course_needs = df.iloc[2, 2:2+n_courses].to_list()
 
     # Preference Matrix
     #
@@ -106,7 +100,8 @@ def run(xlsx):
     ]
     variable_names.sort()
     DV_variables = LpVariable.matrix(
-        "X", variable_names, cat="Integer", lowBound=0, upBound=2
+        # TODO: upBound was 2, is this too tight of a bound?
+        "X", variable_names, cat="Integer", lowBound=0, upBound=max(course_needs)
     )
     allocation = np.array(DV_variables).reshape(n_profs, n_courses)
 
@@ -140,8 +135,8 @@ def run(xlsx):
     info("Professors: " + ", ".join(profs))
     info("Courses: "+ ", ".join(courses))
 
-    debug("Status:", status)
-    # debug("Objective Function:", model.objective.value())
+    debug("Status:" + str(status))
+    debug("Objective Function:" + str(model.objective.value()))
 
 
     ###################################################################
