@@ -33,7 +33,11 @@ def root():
         data = form.xlsxfile.data
 
         # do the deed!
-        status, result = schedulingLP.run(xlsx=data)
+        try:
+            status, result = schedulingLP.run(xlsx=data)
+        except:
+            status = 'Failed'
+            result = None
 
         # result dict structure, each key is the name of a prof:
         # {'profname':{'courses': {'course1': int,

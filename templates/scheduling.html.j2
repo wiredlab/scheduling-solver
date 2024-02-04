@@ -38,11 +38,12 @@ pre { border: solid 1px; padding: 1em; }
 <hr>
 
 <!-- Show the results in a nice format, if present. -->
-{% if status %}
+{% if status == 'Optimal' %}
 Results from <b>{{ filename }}</b> generated on {{ timestamp }}:
 <br>
 Optimizer status: {{ status }}
 <br>
+
 
 <!-- description list
   https://developer.mozilla.org/en-US/docs/Web/HTML/Element/dl
@@ -62,6 +63,13 @@ Optimizer status: {{ status }}
 {{ output }}
 </pre>
 -->
+
+
+{% elif status == 'Failed' %}
+    <div style='color: darkred'>
+    An error has occurred, sorry.
+    This is likely due to a malformed spreadsheet, try processing the example file.
+    </div>
 
 <!-- No results yet, so add a placeholder for the user -->
 {% else %}
