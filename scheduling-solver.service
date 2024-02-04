@@ -1,0 +1,13 @@
+[Unit]
+Description=Gunicorn instance to serve scheduling-solver
+After=network.target
+
+[Service]
+User=dan
+Group=www-data
+WorkingDirectory=/home/dan/apps/scheduling-solver
+Environment="PATH=/home/dan/apps/scheduling-solver/venv/bin"
+ExecStart=/home/dan/apps/scheduling-solver/venv/bin/gunicorn --workers 3 --bind unix:scheduling-solver.sock -m 007 wsgi:app
+
+[Install]
+WantedBy=multi-user.target
